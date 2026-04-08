@@ -3,129 +3,147 @@
 > **Editor untuk Data Publikasi Ilmiah Program Studi Magister Teknik Elektro Universitas Syiah Kuala**
 > *Advanced JSON/JSONL Editor with Form Generation*
 
-Repository ini berisi JSON/JSONL Editor untuk mengedit data publikasi penelitian dari Program Studi Magister Teknik Elektro (MTE) Universitas Syiah Kuala. Editor mendukung format JSON dan JSONL dengan fitur form generation otomatis.
+Editor untuk mengedit data publikasi penelitian dari Program Studi Magister Teknik Elektro (MTE) Universitas Syiah Kuala. Mendukung format JSON dan JSONL dengan fitur form generation otomatis, validasi struktur, dan pembuatan template.
 
 ## ✨ Fitur
 
-- **Multi-format Support**: Mendukung format JSON dan JSONL
-- **Auto Form Generation**: Membuat form editing otomatis berdasarkan struktur data
-- **Drag & Drop**: Upload file dengan drag & drop
-- **Real-time Validation**: Validasi data secara real-time
-- **Multiple Export**: Export ke JSON, JSONL, dan CSV
-- **Search & Filter**: Pencarian dan filter publikasi
-- **Responsive Design**: Tampilan responsif untuk semua device
+### Core
+- **Multi-format Support** — JSON dan JSONL, auto-detect format
+- **Auto Form Generation** — form editing otomatis berdasarkan struktur data
+- **Universal Link Support** — field manapun dengan struktur `{text, link}` otomatis dapat input link
+- **Drag & Drop** — upload file dengan drag & drop
+
+### Edit & Validasi
+- **Tambah / Hapus Publikasi** — struktur baru di-derive dari data yang ada, bukan hardcode
+- **Validasi Struktur** — cek otomatis sebelum Save/Download, deteksi perubahan struktur, field hilang, link hilang
+- **Validasi Manual** — tombol `Validasi Data` untuk cek menyeluruh (error struktur + peringatan konten)
+- **Search & Filter** — pencarian dan filter publikasi
+
+### Export & Template
+- **Multiple Export** — JSON, JSONL, CSV
+- **Buat dari Template** — buat file baru dengan struktur kosong dari data yang sedang dibuka, auto-increment nama file
+
+### UI
+- **Responsive Design** — Bootstrap 5, tampil optimal di semua device
+- **Preview Data** — modal preview JSON sebelum download
+- **Auto-save** — backup otomatis ke localStorage
 
 ## 🚀 Cara Penggunaan
 
-### Metode 1: Langsung
-1. **Download/Clone** repository ini
-2. **Buka** file `start.html` atau `index.html` di browser
-3. **Upload File**: Drag & drop atau pilih file JSON/JSONL
-4. **Edit Data**: Gunakan form yang ter-generate otomatis
-5. **Save/Export**: Simpan atau export dalam format yang diinginkan
+### Langsung
+1. Download/clone repository ini
+2. Buka `index.html` di browser
+3. Upload file JSON/JSONL (drag & drop atau klik)
+4. Edit data melalui form yang ter-generate
+5. Save atau Download
 
-### Metode 2: GitHub Pages
-Akses langsung melalui: `https://[username].github.io/[repository-name]/`
-
-### Metode 3: Local Server
+### Local Server
 ```bash
-# Jika menggunakan Python
 python -m http.server 8000
-
-# Jika menggunakan Node.js
+# atau
 npx serve .
-
-# Kemudian buka http://localhost:8000
+# buka http://localhost:8000
 ```
+
+### GitHub Pages
+Akses: `https://[username].github.io/[repository-name]/`
 
 ## 📁 Struktur Proyek
 
 ```
-JSON-Editor/
-├── index.html              # File utama editor
-├── script.js               # JavaScript logic
-├── config.js               # Konfigurasi aplikasi
-├── README.md               # Dokumentasi
-└── data-penelitian/        # Contoh data
-    ├── JSON/               # File JSON format
-    │   ├── 2024.json
-    │   ├── 2023.json
-    │   └── ...
-    └── JSONL/              # File JSONL format
-        ├── auto.jsonl
-        ├── object.jsonl
-        └── ...
+app/
+├── index.html          # UI (form, tombol, modal)
+├── script.js           # Class JSONEditor — semua logic
+├── config.js           # Konfigurasi: field, validasi, template
+├── README.md           # Dokumentasi
+├── CHANGELOG.md        # Riwayat perubahan
+└── *.jsonl / *.json    # Data publikasi
 ```
 
-## 🔍 Format Data yang Didukung
+## 🔍 Format Data
 
-Editor mendukung dua format data:
+### JSONL (JSON Lines) — Format Utama
+```jsonl
+{"No":"1","Nama Penulis":"Dr. Ahmad","Judul":"Paper Title","Keterangan":{"text":"IEEE Transactions","link":"https://doi.org/..."}}
+{"No":"2","Nama Penulis":"Dr. Siti","Judul":{"text":"Paper Title 2","link":"https://doi.org/..."},"Keterangan":"Jurnal TE"}
+```
 
-### Format JSON (MTE USK)
-
+### JSON (MTE USK Format)
 ```json
 {
   "source": "Website MTE USK",
-  "url": "https://mte.usk.ac.id/publikasi/YYYY-2/",
+  "url": "https://mte.usk.ac.id/publikasi/2024-2/",
   "extractedAt": "2025-06-24T03:48:42.135Z",
-  "year": "YYYY",
+  "year": "2024",
   "tablesCount": 1,
-  "tables": [
-    {
-      "tableIndex": 1,
-      "headers": ["No", "Nama Penulis", "Judul", "Keterangan"],
-      "rows": [
-        [
-          "1",
-          "Nama Penulis",
-          "Judul Publikasi",
-          "Keterangan/Jurnal"
-        ]
-      ]
-    }
-  ]
+  "tables": [{
+    "tableIndex": 1,
+    "headers": ["No", "Nama Penulis", "Judul", "Keterangan"],
+    "rows": [["1", "Nama Penulis", "Judul Publikasi", {"text":"Jurnal","link":"https://..."}]]
+  }]
 }
 ```
 
-### Format JSONL (JSON Lines)
-```jsonl
-{"No": "1", "Nama Penulis": "Dr. Ahmad Syahputra, M.T.", "Judul": {"text": "Machine Learning Applications", "link": "https://example.com/paper1.pdf"}, "Keterangan": "IEEE Transactions"}
-{"No": "2", "Nama Penulis": "Dr. Siti Aminah, M.T.", "Judul": "Deep Learning for Signal Processing", "Keterangan": "Jurnal Teknik Elektro"}
+### Struktur Field
+
+Field bisa berupa **string** atau **object** dengan `{text, link}`:
+
+```json
+// String — untuk teks biasa
+"Judul": "Paper Title"
+
+// Object — untuk teks + link (otomatis dapat input link di form)
+"Judul": { "text": "Paper Title", "link": "https://doi.org/..." }
+"Keterangan": { "text": "IEEE Access", "link": "https://ieeexplore.ieee.org/..." }
 ```
 
-### 📝 Penjelasan Field
+Editor **auto-detect** struktur object → tampilkan input link tanpa perlu konfigurasi.
 
-- **source**: Sumber data (Website MTE USK)
-- **url**: URL sumber data asli
-- **extractedAt**: Timestamp ekstraksi data
-- **year**: Tahun publikasi
-- **tablesCount**: Jumlah tabel dalam data
-- **tables**: Array berisi data tabel publikasi
-  - **tableIndex**: Indeks tabel
-  - **headers**: Header kolom tabel
-  - **rows**: Data baris publikasi
+### Penjelasan Field
 
-### 📋 Format Baris Data
+| Field | Tipe | Wajib | Keterangan |
+|-------|------|-------|------------|
+| `No` | string/number | Ya | Nomor urut |
+| `Nama Penulis` | string | Ya | Nama penulis (pisah koma) |
+| `Judul` | string / `{text,link}` | Ya | Judul publikasi, bisa punya link |
+| `Keterangan` | string / `{text,link}` | Tidak | Jurnal/konferensi, bisa punya link |
 
-Setiap baris publikasi berisi:
-1. **No**: Nomor urut publikasi
-2. **Nama Penulis**: Nama-nama penulis publikasi
-3. **Judul**: Judul publikasi (bisa berupa string atau object dengan link)
-4. **Keterangan**: Informasi jurnal/konferensi/penerbit
+> **Universal**: Editor mendukung field apapun dengan struktur `{text, link}`, bukan hanya `Judul` dan `Keterangan`.
 
-## 🔧 Proses Validasi dan Perbaikan
+## 📋 Fitur Detail
 
-### ✅ Status Validasi
+### Buat dari Template
+1. Buka file sumber (misal `2024.jsonl`)
+2. Klik **Buat dari Template**
+3. Data kosong terbentuk dengan struktur sama persis
+4. Nama file auto-increment (`2024.jsonl` → `2025.jsonl`)
+5. Isi data baru → Download
 
-| Tahun | Status | Masalah Diperbaiki | Sumber Verifikasi |
-|-------|--------|-------------------|-------------------|
-| 2024 | ✅ Diperbaiki | 3 masalah | [Link](https://mte.usk.ac.id/publikasi/2024-2/) |
-| 2023 | ✅ Diperbaiki | 5 masalah | [Link](https://mte.usk.ac.id/publikasi/2023-2/) |
-| 2022 | ✅ Diperbaiki | 1 masalah | [Link](https://mte.usk.ac.id/publikasi/2022-2/) |
-| 2021 | ✅ Diperbaiki | 4 masalah | [Link](https://mte.usk.ac.id/publikasi/2021-2/) |
-| 2020 | ✅ Diperbaiki | 3 masalah | [Link](https://mte.usk.ac.id/publikasi/2020-2/) |
-| 2019 | ✅ Diperbaiki | 1 masalah | [Link](https://mte.usk.ac.id/publikasi/2019-2/) |
-| 2018 | ✅ Diperbaiki | 4 masalah | [Link](https://mte.usk.ac.id/publikasi/2018-2/) |
+### Validasi Struktur
+Sebelum Save/Download, editor otomatis mengecek:
+- Field yang **hilang** dari data asli
+- Field yang **berubah tipe** (object → string = link hilang!)
+- **Keys object** yang berubah
+- **Per-entry consistency** — setiap baris dicek
+
+Jika ada masalah, dialog peringatan muncul dengan detail. User bisa override.
+
+### Validasi Manual
+Klik **Validasi Data** untuk cek menyeluruh:
+- 🔴 **Error Struktur** — perubahan struktur fatal
+- ⚠️ **Peringatan** — field kosong, link tidak valid
+
+## 🔧 Proses Validasi Data
+
+| Tahun | Status | Masalah | Sumber |
+|-------|--------|---------|--------|
+| 2024 | ✅ Diperbaiki | 3 | [Link](https://mte.usk.ac.id/publikasi/2024-2/) |
+| 2023 | ✅ Diperbaiki | 5 | [Link](https://mte.usk.ac.id/publikasi/2023-2/) |
+| 2022 | ✅ Diperbaiki | 1 | [Link](https://mte.usk.ac.id/publikasi/2022-2/) |
+| 2021 | ✅ Diperbaiki | 4 | [Link](https://mte.usk.ac.id/publikasi/2021-2/) |
+| 2020 | ✅ Diperbaiki | 3 | [Link](https://mte.usk.ac.id/publikasi/2020-2/) |
+| 2019 | ✅ Diperbaiki | 1 | [Link](https://mte.usk.ac.id/publikasi/2019-2/) |
+| 2018 | ✅ Diperbaiki | 4 | [Link](https://mte.usk.ac.id/publikasi/2018-2/) |
 | 2017 | ✅ Valid | - | [Link](https://mte.usk.ac.id/publikasi/2017-2/) |
 | 2016 | ✅ Valid | - | [Link](https://mte.usk.ac.id/publikasi/2016-2/) |
 | 2015 | ✅ Valid | - | [Link](https://mte.usk.ac.id/publikasi/2015-2/) |
@@ -135,150 +153,62 @@ Setiap baris publikasi berisi:
 | 2011 | ✅ Valid | - | [Link](https://mte.usk.ac.id/publikasi/2011-2/) |
 | 2010 | ✅ Valid | - | [Link](https://mte.usk.ac.id/publikasi/2010-2/) |
 
-### 🔍 Jenis Masalah yang Diperbaiki
+**Total**: 15 file, 21 masalah diperbaiki, tingkat akurasi 100%
 
-**Masalah Utama**: Pertukaran posisi antara kolom "Judul" dan "Keterangan"
-
-**Contoh Perbaikan**:
+### Contoh Perbaikan
 ```json
-// ❌ Sebelum perbaikan
-[
-  "1",
-  "Nama Penulis",
-  {
-    "text": "Nama Jurnal",
-    "link": "https://link-jurnal.com"
-  },
-  "Judul Publikasi"
-]
+// ❌ Sebelum — kolom Judul dan Keterangan tertukar
+["1", "Nama Penulis", {"text":"Nama Jurnal","link":"..."}, "Judul Publikasi"]
 
-// ✅ Setelah perbaikan
-[
-  "1",
-  "Nama Penulis", 
-  "Judul Publikasi",
-  {
-    "text": "Nama Jurnal",
-    "link": "https://link-jurnal.com"
-  }
-]
+// ✅ Sesudah — posisi benar
+["1", "Nama Penulis", "Judul Publikasi", {"text":"Nama Jurnal","link":"..."}]
 ```
 
-## 📈 Statistik Data
+## 📈 Statistik
 
+- **Rentang Tahun**: 2010 – 2024 (15 tahun)
 - **Total File**: 15 file JSON
-- **Rentang Tahun**: 2010 - 2024 (15 tahun)
 - **File Diperbaiki**: 8 file
-- **File Valid**: 7 file
-- **Total Masalah Diperbaiki**: 21 masalah
-- **Tingkat Akurasi**: 100%
-
-## 🚀 Cara Penggunaan
-
-### JavaScript/Node.js
-```javascript
-const fs = require('fs');
-
-// Membaca data publikasi tahun 2024
-const data2024 = JSON.parse(fs.readFileSync('data-penelitian/2024.json', 'utf8'));
-
-// Mengakses publikasi
-const publikasi = data2024.tables[0].rows;
-console.log(`Total publikasi 2024: ${publikasi.length}`);
-
-// Menampilkan publikasi pertama
-const pub1 = publikasi[0];
-console.log(`Judul: ${pub1[2]}`);
-console.log(`Penulis: ${pub1[1]}`);
-```
-
-### Python
-```python
-import json
-
-# Membaca data publikasi tahun 2024
-with open('data-penelitian/2024.json', 'r', encoding='utf-8') as f:
-    data2024 = json.load(f)
-
-# Mengakses publikasi
-publikasi = data2024['tables'][0]['rows']
-print(f"Total publikasi 2024: {len(publikasi)}")
-
-# Menampilkan publikasi pertama
-pub1 = publikasi[0]
-print(f"Judul: {pub1[2]}")
-print(f"Penulis: {pub1[1]}")
-```
-
-## 🔄 Update Data
-
-Data ini divalidasi berdasarkan website resmi MTE USK per tanggal **25 Juni 2025**. Untuk update data terbaru, silakan merujuk ke:
-
-- Website MTE USK: https://mte.usk.ac.id/
-- Halaman Publikasi: https://mte.usk.ac.id/publikasi/
-
-## 📞 Kontak
-
-**Program Studi Magister Teknik Elektro (MTE)**  
-Fakultas Teknik, Universitas Syiah Kuala  
-Jl. Tgk. Syech Abdurrauf No.7  
-Darussalam, Banda Aceh  
-
-Email: [mte.pps@usk.ac.id](mailto:mte.pps@usk.ac.id)  
-Website: [https://mte.usk.ac.id/](https://mte.usk.ac.id/)
-
-## 📄 Lisensi
-
-Data ini bersumber dari website resmi MTE USK dan digunakan untuk keperluan akademik dan penelitian.
+- **Total Masalah**: 21 masalah diperbaiki
 
 ## 🛠️ Teknologi
 
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
 - **Framework**: Bootstrap 5.1.3 (CDN)
 - **Icons**: Font Awesome 6.0 (CDN)
-- **Format**: JSON, JSONL, CSV support
-- **No Backend Required**: Pure client-side application
+- **Backend**: Tidak dibutuhkan — pure client-side
 
-## 🎨 Fitur Utama
+## 🔄 Update Data
 
-- **Multi-format Support**: JSON dan JSONL
-- **Auto Form Generation**: Generate form otomatis dari struktur data
-- **Drag & Drop**: Upload file dengan mudah
-- **Real-time Validation**: Validasi data secara real-time
-- **Multiple Export**: Export ke JSON, JSONL, dan CSV
-- **Search & Filter**: Pencarian dan filter publikasi
-- **Responsive Design**: Tampilan optimal di semua device
+Data divalidasi berdasarkan website resmi MTE USK per **25 Juni 2025**.
+
+- Website: https://mte.usk.ac.id/
+- Publikasi: https://mte.usk.ac.id/publikasi/
+
+## 📖 Changelog
+
+Lihat [CHANGELOG.md](./CHANGELOG.md) untuk riwayat perubahan lengkap.
 
 ## 🤝 Kontribusi
 
-Kontribusi sangat diterima! Silakan:
-
-1. Fork repository ini
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit perubahan (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
+1. Fork repository
+2. Buat branch (`git checkout -b feature/AmazingFeature`)
+3. Commit (`git commit -m 'Add AmazingFeature'`)
+4. Push (`git push origin feature/AmazingFeature`)
 5. Buat Pull Request
 
-## 📄 Lisensi
+## 📞 Kontak
 
-Proyek ini menggunakan lisensi akademik untuk Program Studi Magister Teknik Elektro Universitas Syiah Kuala.
+**Program Studi Magister Teknik Elektro (MTE)**
+Fakultas Teknik, Universitas Syiah Kuala
+Jl. Tgk. Syech Abdurrauf No.7, Darussalam, Banda Aceh
 
-## 👨‍💻 Author
-
-**KingSyah**
-- Program Studi Magister Teknik Elektro
-- Universitas Syiah Kuala
-- © 2025 All rights reserved
-
-## 🙏 Acknowledgments
-
-- Program Studi Magister Teknik Elektro USK
-- Bootstrap Team
-- Font Awesome Team
-- Semua kontributor data publikasi
+- Email: [mte.pps@usk.ac.id](mailto:mte.pps@usk.ac.id)
+- Website: https://mte.usk.ac.id/
 
 ---
 
-**Terakhir diperbarui**: 25 Juni 2025
-**Status**: ✅ JSON/JSONL Editor v2.1
-**Dikembangkan oleh**: KingSyah
+**KingSyah** — Program Studi Magister Teknik Elektro USK
+© 2025 All rights reserved
+
+> **v2.2.0** — Universal link support, validasi struktur, buat dari template
